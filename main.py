@@ -244,42 +244,38 @@ async def ask_broadcast_info(message: types.Message):
     await message.answer("📨 Habar yuborish uchun format:\n`@kanal xabar_id`", parse_mode="Markdown")
 
 @dp.message_handler(state=AdminStates.waiting_for_broadcast_data)
-async def send_broadcast(message: types.Message, state: FSMContext):
+async def send_forward_only(message: types.Message, state: FSMContext):
     await state.finish()
     parts = message.text.strip().split()
     if len(parts) != 2:
-        await message.answer("❗ Noto‘g‘ri format. Masalan: `@mychannel 1234`")
+        await message.answer("❗ Format noto‘g‘ri. Masalan: `@kanalim 123`")
         return
 
     channel_username, msg_id = parts
     if not msg_id.isdigit():
-        await message.answer("❗ xabar ID raqam bo‘lishi kerak.")
+        await message.answer("❗ Xabar ID raqam bo‘lishi kerak.")
         return
 
     msg_id = int(msg_id)
-    users = await get_all_user_ids()
+    users = await get_all_user_ids()  # Foydalanuvchilar ro‘yxati
 
     success = 0
     fail = 0
 
     for user_id in users:
         try:
-            # 1. Reklama postni nusxa olish
-            sent_msg = await bot.copy_message(user_id, from_chat_id=channel_username, message_id=msg_id)
-
-            # 2. Reply shaklida maxsus xabar yuborish
-            await bot.send_message(
-                user_id,
-                "📥 Kino bilan tanishib chiqing!",
-                reply_to_message_id=sent_msg.message_id
+            await bot.forward_message(
+                chat_id=user_id,
+                from_chat_id=channel_username,
+                message_id=msg_id
             )
-
             success += 1
         except Exception as e:
-            print(f"❌ {user_id} uchun yuborib bo‘lmadi: {e}")
+            print(f"Xatolik {user_id} uchun: {e}")
             fail += 1
 
-    await message.answer(f"✅ Habar yuborildi.\n\n✅ Muvaffaqiyatli: {success}\n❌ Xatolik: {fail}")
+    await message.answer(f"✅ Yuborildi: {success} ta\n❌ Xatolik: {fail} ta")
+
 
 
 # === Kodlar ro‘yxati
