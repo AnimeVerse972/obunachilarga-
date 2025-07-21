@@ -264,12 +264,23 @@ async def send_broadcast(message: types.Message, state: FSMContext):
 
     for user_id in users:
         try:
-            await bot.copy_message(user_id, from_chat_id=channel_username, message_id=msg_id)
+            # 1. Reklama postni nusxa olish
+            sent_msg = await bot.copy_message(user_id, from_chat_id=channel_username, message_id=msg_id)
+
+            # 2. Reply shaklida maxsus xabar yuborish
+            await bot.send_message(
+                user_id,
+                "📥 Kino bilan tanishib chiqing!",
+                reply_to_message_id=sent_msg.message_id
+            )
+
             success += 1
-        except:
+        except Exception as e:
+            print(f"❌ {user_id} uchun yuborib bo‘lmadi: {e}")
             fail += 1
 
     await message.answer(f"✅ Habar yuborildi.\n\n✅ Muvaffaqiyatli: {success}\n❌ Xatolik: {fail}")
+
 
 # === Kodlar ro‘yxati
 @dp.message_handler(lambda m: m.text == "📄 Kodlar ro‘yxati")
