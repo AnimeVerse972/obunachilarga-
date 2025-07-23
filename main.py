@@ -42,6 +42,9 @@ class AdminStates(StatesGroup):
     waiting_for_stat_code = State()
     waiting_for_broadcast_data = State()
 
+class UserStates(StatesGroup):
+    waiting_for_admin_message = State()
+
 # === OBUNA TEKSHIRISH ===
 async def is_user_subscribed(user_id):
     for channel in CHANNELS:
